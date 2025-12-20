@@ -1,18 +1,15 @@
 import { Bot, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const suggestedQuestions = [
-  "How do I create a new quote?",
-  "How do I connect to Systemize?",
-  "How do I set up my price list?",
-  "How do I print or email quotes?",
-];
+import { getSuggestionsForCategory } from "@/config/knowledgeBase";
 
 interface EmptyStateProps {
   onSuggestionClick: (question: string) => void;
+  activeCategoryId?: string | null;
 }
 
-export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
+export function EmptyState({ onSuggestionClick, activeCategoryId }: EmptyStateProps) {
+  const suggestions = getSuggestionsForCategory(activeCategoryId || null);
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
@@ -34,7 +31,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
           Try asking:
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
-          {suggestedQuestions.map((question) => (
+          {suggestions.map((question) => (
             <Button
               key={question}
               variant="outline"

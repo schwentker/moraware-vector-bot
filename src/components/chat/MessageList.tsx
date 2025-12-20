@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Message } from "@/hooks/useChat";
+import { MessageFeedback } from "./MessageFeedback";
 
 interface MessageListProps {
   messages: Message[];
@@ -38,8 +39,9 @@ function TypingIndicator() {
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message, isLast }: { message: Message; isLast: boolean }) {
   const isUser = message.role === "user";
+  const showFeedback = !isUser && isLast && message.content.length > 0;
 
   return (
     <div
@@ -79,6 +81,9 @@ function MessageBubble({ message }: { message: Message }) {
         >
           {formatTime(message.timestamp)}
         </span>
+        {showFeedback && (
+          <MessageFeedback messageId={message.id} />
+        )}
       </div>
     </div>
   );
@@ -98,8 +103,12 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
       ref={scrollRef}
       className="flex-1 overflow-y-auto chat-scrollbar p-4 space-y-4"
     >
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+      {messages.map((message, index) => (
+        <MessageBubble 
+          key={message.id} 
+          message={message} 
+          isLast={index === messages.length - 1 && !isLoading}
+        />
       ))}
       {isLoading && <TypingIndicator />}
     </div>
