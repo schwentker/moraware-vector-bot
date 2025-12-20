@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
-import { Bot, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Bot, User, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Message } from "@/hooks/useChat";
 import { MessageFeedback } from "./MessageFeedback";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface MessageListProps {
   messages: Message[];
@@ -15,7 +17,7 @@ function formatTime(date: Date): string {
 
 function TypingIndicator() {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 animate-fade-in" role="status" aria-label="Assistant is typing">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
         <Bot className="h-4 w-4 text-primary" />
       </div>
@@ -39,20 +41,60 @@ function TypingIndicator() {
   );
 }
 
+function CopyButton({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      toast({
+        description: "Copied to clipboard!",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        description: "Failed to copy to clipboard",
+      });
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleCopy}
+      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground transition-colors"
+      aria-label={copied ? "Copied" : "Copy response"}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-green-500" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+    </Button>
+  );
+}
+
 function MessageBubble({ message, isLast }: { message: Message; isLast: boolean }) {
   const isUser = message.role === "user";
   const showFeedback = !isUser && isLast && message.content.length > 0;
+  const showCopy = !isUser && message.content.length > 0;
 
   return (
     <div
       className={cn(
-        "flex items-start gap-3",
+        "flex items-start gap-3 animate-fade-in",
         isUser && "flex-row-reverse"
       )}
+      role="article"
+      aria-label={`${isUser ? "Your" : "Assistant"} message`}
     >
       <div
         className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105",
           isUser ? "bg-primary" : "bg-secondary"
         )}
       >
@@ -62,10 +104,10 @@ function MessageBubble({ message, isLast }: { message: Message; isLast: boolean 
           <Bot className="h-4 w-4 text-primary" />
         )}
       </div>
-      <div className="flex flex-col gap-1 max-w-[80%]">
+      <div className="flex flex-col gap-1 max-w-[80%] group">
         <div
           className={cn(
-            "rounded-2xl px-4 py-3 shadow-sm",
+            "rounded-2xl px-4 py-3 shadow-sm transition-shadow hover:shadow-md",
             isUser
               ? "rounded-tr-sm bg-chat-user-bg text-chat-user-fg"
               : "rounded-tl-sm border bg-chat-assistant-bg text-chat-assistant-fg"
@@ -73,14 +115,19 @@ function MessageBubble({ message, isLast }: { message: Message; isLast: boolean 
         >
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
-        <span
-          className={cn(
-            "text-xs text-muted-foreground",
-            isUser && "text-right"
+        <div className={cn(
+          "flex items-center gap-2",
+          isUser && "flex-row-reverse"
+        )}>
+          <span className="text-xs text-muted-foreground">
+            {formatTime(message.timestamp)}
+          </span>
+          {showCopy && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <CopyButton content={message.content} />
+            </div>
           )}
-        >
-          {formatTime(message.timestamp)}
-        </span>
+        </div>
         {showFeedback && (
           <MessageFeedback messageId={message.id} />
         )}
@@ -102,6 +149,9 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
     <div
       ref={scrollRef}
       className="flex-1 overflow-y-auto chat-scrollbar p-4 space-y-4"
+      role="log"
+      aria-label="Chat messages"
+      aria-live="polite"
     >
       {messages.map((message, index) => (
         <MessageBubble 

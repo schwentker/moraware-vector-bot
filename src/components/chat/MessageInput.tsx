@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, KeyboardEvent, useCallback } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,7 @@ export function MessageInput({ onSend, isLoading, initialValue = "" }: MessageIn
     }
   }, [initialValue]);
 
+  // Resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -32,19 +33,23 @@ export function MessageInput({ onSend, isLoading, initialValue = "" }: MessageIn
     }
   }, [value]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (value.trim() && !isLoading) {
       onSend(value);
       setValue("");
     }
-  };
+  }, [value, isLoading, onSend]);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
-  };
+  }, [handleSubmit]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setValue(e.target.value);
+  }, []);
 
   const charCount = value.length;
   const isOverLimit = charCount > MAX_CHARS;
@@ -58,14 +63,20 @@ export function MessageInput({ onSend, isLoading, initialValue = "" }: MessageIn
             <Textarea
               ref={textareaRef}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={handleChange}
               onKeyDown={handleKeyDown}
               placeholder="Ask me about CounterGo..."
               disabled={isLoading}
-              className="min-h-[48px] max-h-[120px] resize-none pr-12"
+              className="min-h-[48px] max-h-[120px] resize-none pr-16 transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
               rows={1}
+              aria-label="Type your message"
+              aria-describedby="char-count input-help"
             />
-            <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+            <div 
+              id="char-count"
+              className="absolute bottom-2 right-2 text-xs text-muted-foreground"
+              aria-live="polite"
+            >
               <span className={isOverLimit ? "text-destructive font-medium" : ""}>
                 {charCount}
               </span>
@@ -76,13 +87,13 @@ export function MessageInput({ onSend, isLoading, initialValue = "" }: MessageIn
             onClick={handleSubmit}
             disabled={!canSend}
             size="icon"
-            className="h-12 w-12 shrink-0"
+            className="h-12 w-12 shrink-0 min-h-[44px] min-w-[44px] transition-transform active:scale-95"
+            aria-label="Send message"
           >
-            <Send className="h-5 w-5" />
-            <span className="sr-only">Send message</span>
+            <Send className="h-5 w-5" aria-hidden="true" />
           </Button>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground text-center">
+        <p id="input-help" className="mt-2 text-xs text-muted-foreground text-center">
           Press Enter to send, Shift + Enter for new line
         </p>
       </div>

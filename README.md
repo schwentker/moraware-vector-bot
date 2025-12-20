@@ -1,73 +1,197 @@
-# Welcome to your Lovable project
+# CounterGo Help Chatbot
 
-## Project info
+A modern, responsive help chatbot for CounterGo - Moraware's quoting and drawing software for countertop fabricators.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- 💬 **Real-time Chat** - Stream responses from Claude AI
+- 📚 **Knowledge Base Integration** - 12 categorized help topics
+- 🎨 **Moraware Branded** - Custom theme with brand colors
+- 📱 **Fully Responsive** - Works on desktop, tablet, and mobile
+- ♿ **Accessible** - ARIA labels, keyboard navigation, focus states
+- 💾 **Persistent History** - Chat saved to localStorage
+- 🔄 **Error Recovery** - Retry failed messages, clear error handling
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS
+- **UI Components**: shadcn/ui
+- **AI**: Claude API (via Cloudflare Worker)
+- **Deployment**: Cloudflare Pages
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Environment Variables
 
-Changes made via Lovable will be committed automatically to this repo.
+### Frontend (Lovable/.env.local)
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```env
+# URL to your Cloudflare Worker API
+VITE_API_ENDPOINT=https://your-worker.your-subdomain.workers.dev/api/chat
 ```
 
-**Edit a file directly in GitHub**
+### Backend (Cloudflare Worker)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```env
+# Your Anthropic API key
+ANTHROPIC_API_KEY=sk-ant-api03-...
+```
 
-**Use GitHub Codespaces**
+## Local Development
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+# Install dependencies
+npm install
 
-## What technologies are used for this project?
+# Start development server
+npm run dev
 
-This project is built with:
+# Build for production
+npm run build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Preview production build
+npm run preview
+```
 
-## How can I deploy this project?
+## Deployment to Cloudflare Pages
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### 1. Connect Repository
 
-## Can I connect a custom domain to my Lovable project?
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Go to **Workers & Pages** > **Create application** > **Pages**
+3. Connect your GitHub repository
+4. Select the repository containing this project
 
-Yes, you can!
+### 2. Configure Build Settings
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+| Setting | Value |
+|---------|-------|
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | `/` (or subdirectory if applicable) |
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### 3. Set Environment Variables
+
+In Cloudflare Pages settings, add:
+
+| Variable | Value |
+|----------|-------|
+| `VITE_API_ENDPOINT` | `https://your-worker.workers.dev/api/chat` |
+
+### 4. Deploy
+
+Click **Save and Deploy**. Your site will be available at `your-project.pages.dev`.
+
+## Cloudflare Worker Setup
+
+Your Cloudflare Worker should:
+
+1. Accept POST requests with `{ messages: [...] }`
+2. Forward to Anthropic API with streaming
+3. Return SSE stream with `content_block_delta` events
+
+### Worker Environment Variables
+
+Set in Cloudflare Dashboard > Workers > your-worker > Settings > Variables:
+
+| Variable | Value |
+|----------|-------|
+| `ANTHROPIC_API_KEY` | Your Anthropic API key |
+
+### Worker System Prompt
+
+The worker should include this system prompt:
+
+```
+You are a helpful assistant for Moraware CounterGo, a quoting & drawing software for countertop fabricators. Answer questions about:
+- Get Started & setup
+- Drawing countertop layouts
+- Creating quotes & orders
+- Managing price lists
+- Printing & emailing
+- Integration with Systemize & QuickBooks
+- Account management
+
+Be concise, friendly & technical when needed. Reference specific features.
+If unsure, suggest contacting support@moraware.com or visiting countergohelp.moraware.com.
+```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── chat/
+│   │   ├── AppLayout.tsx      # Main layout orchestrator
+│   │   ├── Header.tsx         # Top header with clear chat
+│   │   ├── CategorySidebar.tsx # Desktop category nav
+│   │   ├── CategoryDrawer.tsx  # Mobile category nav
+│   │   ├── ChatContainer.tsx   # Chat area wrapper
+│   │   ├── MessageList.tsx     # Message display
+│   │   ├── MessageInput.tsx    # Input textarea
+│   │   ├── MessageFeedback.tsx # Helpful? buttons
+│   │   ├── EmptyState.tsx      # Welcome + suggestions
+│   │   └── Footer.tsx          # Footer with KB link
+│   └── ui/                     # shadcn components
+├── config/
+│   └── knowledgeBase.ts        # Categories & suggestions
+├── hooks/
+│   └── useChat.ts              # Chat state management
+├── lib/
+│   └── chatApi.ts              # API client with streaming
+└── pages/
+    └── Index.tsx               # Main page
+```
+
+## Customization
+
+### Adding Categories
+
+Edit `src/config/knowledgeBase.ts`:
+
+```typescript
+{
+  id: "new-category",
+  label: "New Category",
+  icon: SomeIcon,
+  question: "Default question for this category?",
+  description: "Category description",
+  suggestions: [
+    "Suggestion 1?",
+    "Suggestion 2?",
+    // ...
+  ],
+  articleUrl: "https://help.example.com/category",
+}
+```
+
+### Theming
+
+Edit `src/index.css` to modify CSS variables:
+
+```css
+:root {
+  --primary: 224 76% 40%;      /* Main brand color */
+  --accent: 217 91% 60%;       /* Secondary color */
+  --chat-user-bg: 224 76% 40%; /* User message bubble */
+  /* ... */
+}
+```
+
+## Testing Checklist
+
+- [ ] Desktop layout (1024px+)
+- [ ] Tablet layout (768px-1023px)
+- [ ] Mobile layout (<768px)
+- [ ] Mobile Safari
+- [ ] Keyboard navigation
+- [ ] Screen reader compatibility
+- [ ] Dark mode (if enabled)
+- [ ] Error states (network offline, API errors)
+- [ ] Rate limiting (429 responses)
+- [ ] Chat history persistence
+
+## Support
+
+For CounterGo support: support@moraware.com
+
+For chatbot development: [Lovable](https://lovable.dev)

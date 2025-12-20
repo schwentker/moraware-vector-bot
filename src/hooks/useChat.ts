@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { sendMessage as sendApiMessage } from "@/lib/chatApi";
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,6 +10,7 @@ export interface Message {
 }
 
 const STORAGE_KEY = "countergo-chat-messages";
+const MAX_STORED_MESSAGES = 100; // Limit stored messages for performance
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -37,11 +38,13 @@ export function useChat() {
     }
   }, []);
 
-  // Save messages to localStorage on change
+  // Save messages to localStorage on change (with limit)
   useEffect(() => {
     if (messages.length > 0) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+        // Only store last N messages to prevent localStorage bloat
+        const messagesToStore = messages.slice(-MAX_STORED_MESSAGES);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesToStore));
       } catch (error) {
         console.error("Failed to save chat history:", error);
       }
