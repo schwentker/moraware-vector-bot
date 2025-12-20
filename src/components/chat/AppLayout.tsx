@@ -8,7 +8,7 @@ import { useChat } from "@/hooks/useChat";
 
 export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { messages, isLoading, sendMessage, clearMessages } = useChat();
+  const { messages, isLoading, error, sendMessage, retryLastMessage, clearMessages } = useChat();
 
   const handleCategoryClick = (categoryId: string) => {
     // For now, send a message asking about the category
@@ -47,7 +47,9 @@ export function AppLayout() {
             <ChatContainer
               messages={messages}
               isLoading={isLoading}
+              error={error}
               onSendMessage={sendMessage}
+              onRetry={retryLastMessage}
             />
           </div>
           <Footer />
