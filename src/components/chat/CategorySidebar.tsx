@@ -1,41 +1,18 @@
-import {
-  Rocket,
-  PlayCircle,
-  Sparkles,
-  PenTool,
-  FileText,
-  ShoppingCart,
-  DollarSign,
-  Printer,
-  Eye,
-  Link,
-  Settings,
-  Calculator,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-const categories = [
-  { id: "get-started", label: "Get Started", icon: Rocket },
-  { id: "how-to-videos", label: "How-To Videos", icon: PlayCircle },
-  { id: "whats-new", label: "What's New", icon: Sparkles },
-  { id: "drawing", label: "Drawing", icon: PenTool },
-  { id: "quoting", label: "Quoting", icon: FileText },
-  { id: "orders", label: "Orders", icon: ShoppingCart },
-  { id: "price-lists", label: "Price Lists", icon: DollarSign },
-  { id: "printing-emailing", label: "Printing & Emailing", icon: Printer },
-  { id: "sample-views", label: "Sample Views", icon: Eye },
-  { id: "connect-systemize", label: "Connect to Systemize", icon: Link },
-  { id: "manage-account", label: "Manage Account", icon: Settings },
-  { id: "quickbooks", label: "QuickBooks Integration", icon: Calculator },
-];
+import { categories } from "@/config/knowledgeBase";
 
 interface CategorySidebarProps {
   onCategoryClick?: (categoryId: string) => void;
+  activeCategoryId?: string | null;
   className?: string;
 }
 
-export function CategorySidebar({ onCategoryClick, className }: CategorySidebarProps) {
+export function CategorySidebar({ 
+  onCategoryClick, 
+  activeCategoryId,
+  className 
+}: CategorySidebarProps) {
   return (
     <aside
       className={cn(
@@ -54,11 +31,17 @@ export function CategorySidebar({ onCategoryClick, className }: CategorySidebarP
             <li key={category.id}>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 text-left font-normal hover:bg-secondary"
+                className={cn(
+                  "w-full justify-start gap-3 text-left font-normal hover:bg-secondary",
+                  activeCategoryId === category.id && "bg-secondary text-primary"
+                )}
                 onClick={() => onCategoryClick?.(category.id)}
               >
-                <category.icon className="h-4 w-4 text-muted-foreground" />
-                <span>{category.label}</span>
+                <category.icon className={cn(
+                  "h-4 w-4",
+                  activeCategoryId === category.id ? "text-primary" : "text-muted-foreground"
+                )} />
+                <span className="truncate">{category.label}</span>
               </Button>
             </li>
           ))}
@@ -67,5 +50,3 @@ export function CategorySidebar({ onCategoryClick, className }: CategorySidebarP
     </aside>
   );
 }
-
-export { categories };

@@ -3,21 +3,23 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { categories } from "./CategorySidebar";
+import { categories } from "@/config/knowledgeBase";
+import { cn } from "@/lib/utils";
 
 interface CategoryDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCategoryClick?: (categoryId: string) => void;
+  activeCategoryId?: string | null;
 }
 
 export function CategoryDrawer({
   open,
   onOpenChange,
   onCategoryClick,
+  activeCategoryId,
 }: CategoryDrawerProps) {
   const handleCategoryClick = (categoryId: string) => {
     onCategoryClick?.(categoryId);
@@ -36,10 +38,16 @@ export function CategoryDrawer({
               <li key={category.id}>
                 <Button
                   variant="outline"
-                  className="w-full h-auto flex-col gap-2 py-4 hover:bg-secondary"
+                  className={cn(
+                    "w-full h-auto flex-col gap-2 py-4 hover:bg-secondary",
+                    activeCategoryId === category.id && "border-primary bg-secondary"
+                  )}
                   onClick={() => handleCategoryClick(category.id)}
                 >
-                  <category.icon className="h-5 w-5 text-primary" />
+                  <category.icon className={cn(
+                    "h-5 w-5",
+                    activeCategoryId === category.id ? "text-primary" : "text-muted-foreground"
+                  )} />
                   <span className="text-xs text-center">{category.label}</span>
                 </Button>
               </li>
