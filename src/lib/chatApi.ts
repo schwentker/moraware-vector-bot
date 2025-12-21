@@ -54,6 +54,7 @@ export async function sendMessage(
 
   while (true) {
     const { done, value } = await reader.read();
+    console.log('Stream chunk received:', decoder.decode(value));
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
@@ -69,6 +70,7 @@ export async function sendMessage(
 
         try {
           const parsed = JSON.parse(data);
+          console.log('Parsed event:', parsed);
           if (parsed.type === 'content_block_delta') {
             onChunk(parsed.delta?.text || '');
           }
