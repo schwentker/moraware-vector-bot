@@ -26,7 +26,7 @@ export async function loadKB(): Promise<KBData> {
   if (kbData) return kbData;
   
   try {
-    const response = await fetch('/kb-data.json');
+    const response = await fetch(import.meta.env.BASE_URL + 'kb-data.json');
     if (!response.ok) {
       throw new Error(`Failed to load KB: ${response.status}`);
     }
