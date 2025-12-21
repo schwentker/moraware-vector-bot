@@ -1,3 +1,5 @@
+import { searchKB, buildContext } from './kbSearch';
+
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT || '/api/chat';
 
 export interface ChatMessage {
@@ -9,12 +11,31 @@ export async function sendMessage(
   messages: ChatMessage[],
   onChunk: (text: string) => void
 ): Promise<void> {
+  // Get the last user message for KB search
+  const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+  let kbContext = '';
+  
+  if (lastUserMessage) {
+    try {
+      const articles = await searchKB(lastUserMessage.content, 3);
+      if (articles.length > 0) {
+        console.log(`📚 Found ${articles.length} relevant KB articles`);
+        kbContext = buildContext(articles);
+      }
+    } catch (error) {
+      console.warn('KB search failed, continuing without context:', error);
+    }
+  }
+
   const response = await fetch(API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ 
+      messages,
+      kbContext: kbContext || undefined
+    }),
   });
 
   if (!response.ok) {
