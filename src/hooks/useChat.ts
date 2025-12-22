@@ -81,20 +81,23 @@ export function useChat() {
     ]);
 
     try {
-      // Build conversation history for API
-      const conversationHistory = messages.map((msg) => ({
+      // Build conversation history for API - get current messages to avoid stale closure
+      const currentMessages = [...messages, userMessage];
+      const conversationHistory = currentMessages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
-      conversationHistory.push({ role: "user", content: content.trim() });
 
       await sendApiMessage(conversationHistory, (chunk) => {
         assistantContent += chunk;
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantId ? { ...msg, content: assistantContent } : msg
-          )
-        );
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage && lastMessage.role === 'assistant') {
+            lastMessage.content = assistantContent;
+          }
+          return [...newMessages];
+        });
       });
 
       // Update final timestamp
