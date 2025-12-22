@@ -64,19 +64,21 @@ export async function sendMessage(
     buffer = lines.pop() || '';
 
     for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
+      const trimmedLine = line.trim();
+      if (!trimmedLine || trimmedLine === 'data: [DONE]') continue;
 
+      if (trimmedLine.startsWith('data: ')) {
         try {
-          const parsed = JSON.parse(data);
+          const jsonString = trimmedLine.slice(6);
+          const parsed = JSON.parse(jsonString);
           console.log('Parsed event:', parsed);
-          if (parsed.type === 'content_block_delta') {
-            onChunk(parsed.delta?.text || '');
+          
+          // Anthropic format: look for content_block_delta
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            onChunk(parsed.delta.text);
           }
         } catch (e) {
-          // Ignore parse errors for incomplete chunks
-          console.debug('Parse error (may be incomplete):', e);
+          console.error('Error parsing SSE data:', e);
         }
       }
     }
