@@ -83,10 +83,13 @@ export function useChat() {
     try {
       // Build conversation history for API - get current messages to avoid stale closure
       const currentMessages = [...messages, userMessage];
-      const conversationHistory = currentMessages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+      // Only send messages with content to the API (exclude empty assistant placeholder)
+      const conversationHistory = currentMessages
+        .filter((msg) => msg.content.trim() !== '')
+        .map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
 
       await sendApiMessage(conversationHistory, (chunk) => {
         assistantContent += chunk;
