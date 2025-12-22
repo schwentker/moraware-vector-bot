@@ -26,17 +26,23 @@ export async function sendMessage(
       console.warn('KB search failed, continuing without context:', error);
     }
   }
+const apiMessages = messages
+  .filter(m => m.content && m.content.trim() !== '')
+  .map(m => ({
+    role: m.role,
+    content: m.content
+  }));
 
-  const response = await fetch(API_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ 
-      messages,
-      kbContext: kbContext || undefined
-    }),
-  });
+const response = await fetch(API_ENDPOINT, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ 
+    messages: apiMessages, // Use filtered messages here
+    kbContext: kbContext || undefined
+  }),
+});
 
   if (!response.ok) {
     if (response.status === 429) {
