@@ -1,0 +1,51 @@
+name: Build and Deploy to Hugo Site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout chatbot repo
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Create production env
+        run: |
+          echo "VITE_API_ENDPOINT=https://countergo-chat-worker.countergo-chat-worker.workers.dev" > .env.production
+          
+      - name: Build
+        run: npm run build
+        
+      - name: Checkout Hugo site repo
+        uses: actions/checkout@v4
+        with:
+          repository: schwentker/sandboxlabsai
+          token: ${{ secrets.HUGO_DEPLOY_TOKEN }}
+          path: hugo-site
+          
+      - name: Copy build to Hugo static folder
+        run: |
+          mkdir -p hugo-site/static/countergo-chat
+          cp -r dist/* hugo-site/static/countergo-chat/
+          
+      - name: Commit and push to Hugo repo
+        run: |
+          cd hugo-site
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-deploy CounterGo chatbot $(date +'%Y-%m-%d %H:%M')"
+          git push
