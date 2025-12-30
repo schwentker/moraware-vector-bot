@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Trash2 } from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -46,39 +46,36 @@ export function Header({ onClearChat, hasMessages }: HeaderProps) {
           </div>
         </div>
         
-        {hasMessages && (
-          <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2 text-muted-foreground hover:text-destructive min-h-[44px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-label="Clear chat history"
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Clear chat</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Clear chat history?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete all messages in this conversation. 
-                  This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleClear}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Clear chat
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2 min-h-[44px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label="Start new chat"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Chat</span>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start new conversation?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {hasMessages 
+                  ? "This will clear your current conversation and start fresh. This action cannot be undone."
+                  : "Start a fresh conversation with the AI assistant."
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleClear}>
+                New Chat
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </header>
   );
