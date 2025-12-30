@@ -42,11 +42,19 @@ export function Header({ onClearChat, onToggleSidebar, hasMessages }: HeaderProp
               <Menu className="h-5 w-5" />
             </Button>
           )}
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <Bot className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-semibold">CounterGo Assistant</h1>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Moraware</span>
+              </div>
+              <h1 className="text-lg font-semibold leading-tight">CounterGo AI Assistant</h1>
+              <p className="text-xs text-muted-foreground/70 hidden sm:block">
+                Powered by Moraware AI • Supports CounterGo, Systemize & Inventory
+              </p>
+            </div>
           </div>
         </div>
         
