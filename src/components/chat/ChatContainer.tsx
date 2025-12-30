@@ -12,7 +12,6 @@ interface ChatContainerProps {
   error: string | null;
   onSendMessage: (message: string) => void;
   onRetry: () => void;
-  activeCategoryId?: string | null;
 }
 
 export function ChatContainer({
@@ -21,7 +20,6 @@ export function ChatContainer({
   error,
   onSendMessage,
   onRetry,
-  activeCategoryId,
 }: ChatContainerProps) {
   const [inputValue, setInputValue] = useState("");
 
@@ -39,7 +37,7 @@ export function ChatContainer({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {isEmpty ? (
-        <EmptyState onSuggestionClick={handleSuggestionClick} activeCategoryId={activeCategoryId} />
+        <EmptyState onSuggestionClick={handleSuggestionClick} />
       ) : (
         <MessageList messages={messages} isLoading={isLoading} />
       )}
