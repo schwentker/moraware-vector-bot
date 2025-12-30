@@ -4,11 +4,10 @@ import { getSuggestionsForCategory } from "@/config/knowledgeBase";
 
 interface EmptyStateProps {
   onSuggestionClick: (question: string) => void;
-  activeCategoryId?: string | null;
 }
 
-export function EmptyState({ onSuggestionClick, activeCategoryId }: EmptyStateProps) {
-  const suggestions = getSuggestionsForCategory(activeCategoryId || null);
+export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
+  const suggestions = getSuggestionsForCategory(null);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-6 text-center animate-fade-in">

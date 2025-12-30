@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Trash2, Menu } from "lucide-react";
+import { Bot, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -15,11 +15,10 @@ import {
 
 interface HeaderProps {
   onClearChat: () => void;
-  onToggleSidebar?: () => void;
   hasMessages: boolean;
 }
 
-export function Header({ onClearChat, onToggleSidebar, hasMessages }: HeaderProps) {
+export function Header({ onClearChat, hasMessages }: HeaderProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleClear = () => {
@@ -31,17 +30,6 @@ export function Header({ onClearChat, onToggleSidebar, hasMessages }: HeaderProp
     <header className="sticky top-0 z-50 w-full border-b bg-card" role="banner">
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          {onToggleSidebar && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden min-h-[44px] min-w-[44px]"
-              onClick={onToggleSidebar}
-              aria-label="Open help categories menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          )}
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <Bot className="h-5 w-5 text-primary-foreground" />
