@@ -30,6 +30,7 @@ export async function loadKB(): Promise<KBData> {
     if (!response.ok) {
       throw new Error(`Failed to load KB: ${response.status}`);
     }
+    
     kbData = await response.json();
     console.log(`✅ Loaded ${kbData!.total_articles} KB articles`);
     return kbData!;
@@ -40,23 +41,51 @@ export async function loadKB(): Promise<KBData> {
 }
 
 /**
- * Simple keyword-based search through KB articles
+ * Simple keyword-based search through KB articles with product filtering
  */
-export async function searchKB(query: string, maxResults = 3): Promise<Article[]> {
+export async function searchKB(query: string, maxResults = 10): Promise<Article[]> {
   const kb = await loadKB();
+  const queryLower = query.toLowerCase();
+  
+  // Detect product mention for filtering
+  let productFilter: string | null = null;
+  
+  if (queryLower.includes('systemize')) {
+    productFilter = 'systemize';
+  } else if (queryLower.includes('inventory')) {
+    productFilter = 'inventory';
+  } else if (queryLower.includes('countergo')) {
+    productFilter = 'countergo';
+  }
+  
+  // Filter articles by product if mentioned
+  let articlesToSearch = kb.articles;
+  if (productFilter) {
+    articlesToSearch = kb.articles.filter(article => 
+      article.url.toLowerCase().includes(productFilter) ||
+      article.category.toLowerCase().includes(productFilter)
+    );
+    console.log(`🎯 Filtered to ${articlesToSearch.length} ${productFilter} articles`);
+  }
+  
   const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 2);
   
   if (keywords.length === 0) return [];
   
-  const scored = kb.articles.map(article => {
+  const scored = articlesToSearch.map(article => {
     let score = 0;
     const titleLower = article.title.toLowerCase();
     const contentLower = article.content.toLowerCase();
     const categoryLower = article.category.toLowerCase();
     
     keywords.forEach(kw => {
+      // Title matches are most important
       if (titleLower.includes(kw)) score += 5;
+      
+      // Category matches are valuable
       if (categoryLower.includes(kw)) score += 3;
+      
+      // Content matches (capped to avoid over-weighting)
       const contentMatches = (contentLower.match(new RegExp(kw, 'g')) || []).length;
       score += Math.min(contentMatches, 3);
     });
