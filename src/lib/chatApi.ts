@@ -17,7 +17,7 @@ export async function sendMessage(
   
   if (lastUserMessage) {
     try {
-      const articles = await searchKB(lastUserMessage.content, 3);
+      const articles = await searchKB(lastUserMessage.content, 10);
       if (articles.length > 0) {
         console.log(`📚 Found ${articles.length} relevant KB articles`);
         kbContext = buildContext(articles);
@@ -26,77 +26,50 @@ export async function sendMessage(
       console.warn('KB search failed, continuing without context:', error);
     }
   }
-const apiMessages = messages
-  .filter(m => m.content && m.content.trim() !== '')
-  .map(m => ({
-    role: m.role,
-    content: m.content
-  }));
 
-// Build expert-focused system prompt
-// Updated System Prompt - Replace in src/lib/chatApi.ts starting at line 37
+  const apiMessages = messages
+    .filter(m => m.content && m.content.trim() !== '')
+    .map(m => ({
+      role: m.role,
+      content: m.content
+    }));
 
-const systemPrompt = `You are the Moraware AI Assistant - product specialist for CounterGo, Systemize, and Inventory software.
+  // CRITICAL FIX: Inject KB context into user's LAST message
+  // This ensures Claude sees it even if Worker drops systemPrompt
+  const lastMessageIndex = apiMessages.length - 1;
+  if (kbContext && lastMessageIndex >= 0 && apiMessages[lastMessageIndex].role === 'user') {
+    const originalQuestion = apiMessages[lastMessageIndex].content;
+    apiMessages[lastMessageIndex].content = `Use ONLY these Moraware KB articles to answer. NO generic tutorials, NO numbered lists, NO headers.
 
-CORE OPERATIONAL RULES - KB SUPREMACY:
-- KB articles are your ONLY source of truth for product features and workflows
-- If KB contains relevant documentation, base answer EXCLUSIVELY on that content
-- NEVER generate generic software tutorials, invented UI paths, or speculative instructions
-- If KB lacks information, state clearly: "Moraware documentation doesn't cover [topic]. Contact support at support.moraware.com"
-- When uncertain, state what docs DO cover, not what you assume
+${kbContext}
 
-RESPONSE ARCHITECTURE:
-- Compressed prose, NOT tutorial format
-- Direct path to solution in 2-4 sentences unless complexity requires expansion
-- NO numbered lists, nested bullets, markdown headers, or bold formatting EXCEPT:
-  • Exact UI element names user must click (Settings → Reports → Print)
-  • Critical warnings or version-specific caveats
-- Assume user competence; no explanatory preambles
-- One solution per response; if multiple paths exist, give clearest/fastest
+USER QUESTION: ${originalQuestion}
 
-PRODUCT-SPECIFIC BEHAVIOR:
-- CounterGo questions → cite CounterGo docs only
-- Systemize questions → cite Systemize docs only  
-- Inventory questions → cite Inventory docs only
-- Cross-product questions → synthesize from relevant product docs
-- Include version specifics when documentation indicates feature availability varies
+ANSWER RULES: 2-4 sentences max. KB content only. No Step 1/Step 2. No "##" headers.`;
+  }
 
-TONE CALIBRATION:
-- Strategic brevity over conversational warmth
-- Operator-to-operator directness
-- No apologies for missing features (state facts)
-- No empathy theater ("I understand this is frustrating...")
-- Acknowledge edge cases: "This workflow isn't documented; contact support for custom setup"
+  const systemPrompt = `You are the Moraware AI Assistant - product specialist for CounterGo, Systemize, and Inventory software.
 
-FORBIDDEN PATTERNS:
-- Generic "most software works this way" tutorials
-- Invented menu paths not in documentation
-- Lists masquerading as answers (Step 1, Step 2...)
-- Speculative feature descriptions ("You might try..." when docs show exact path)
-- Template responses that could apply to any software
-- Headers, sections, or tutorial scaffolding
-
-${kbContext ? `RELEVANT KB ARTICLES:\n${kbContext}\n\nBase your answer EXCLUSIVELY on this KB content. Reference specific article information directly. If these articles don't fully answer the query, acknowledge the gap.` : 'No KB articles matched this query. If question is about Moraware products, state: "Moraware documentation doesn\'t cover this. Contact support at support.moraware.com." Do NOT generate generic software advice.'}
-
-QUALITY CHECKS (internal - do not output):
-1. Is answer based on actual KB content (not assumptions)?
-2. Have I removed tutorial scaffolding and unnecessary formatting?
-3. Would Moraware support team approve this answer?
-4. If saying "not documented," did I exhaust search variations?
+CORE RULES:
+- Use ONLY the KB articles provided in the user message
+- NO numbered lists, NO headers (##), NO tutorial format
+- 2-4 sentences maximum unless complexity requires more
+- If KB doesn't have info, say: "Moraware documentation doesn't cover this. Contact support at support.moraware.com"
+- Compressed prose only
 
 Answer with KB-backed specificity and compressed clarity.`;
 
-const response = await fetch(API_ENDPOINT, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ 
-    messages: apiMessages,
-    systemPrompt,
-    temperature: 0.3
-  }),
-});
+  const response = await fetch(API_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      messages: apiMessages,
+      system: systemPrompt,
+      temperature: 0
+    }),
+  });
 
   if (!response.ok) {
     if (response.status === 429) {

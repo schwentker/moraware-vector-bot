@@ -79,16 +79,20 @@ export async function searchKB(query: string, maxResults = 10): Promise<Article[
     const categoryLower = article.category.toLowerCase();
     
     keywords.forEach(kw => {
-      // Title matches are most important
-      if (titleLower.includes(kw)) score += 5;
-      
-      // Category matches are valuable
-      if (categoryLower.includes(kw)) score += 3;
-      
-      // Content matches (capped to avoid over-weighting)
-      const contentMatches = (contentLower.match(new RegExp(kw, 'g')) || []).length;
-      score += Math.min(contentMatches, 3);
-    });
+  // Exact match in title is high priority
+  if (titleLower === kw) score += 50;
+  // Word start match in title (e.g. "Print" matches "Printing")
+  if (titleLower.includes(kw)) score += 20;
+  
+  // Content matches: prioritize density
+  const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+  const matches = (contentLower.match(regex) || []).length;
+  score += Math.min(matches, 10); // Cap content contribution
+});
+const actionWords = keywords.filter(k => !['systemize', 'countergo', 'inventory'].includes(k));
+actionWords.forEach(aw => {
+  if (titleLower.includes(aw)) score += 30;
+});
     
     return { article, score };
   });
