@@ -1,4 +1,7 @@
 // KB Search Module for CounterGo Chatbot
+import { vectorSearch } from './vectorSearch';
+
+const USE_VECTOR = import.meta.env.VITE_USE_VECTOR === 'true';
 
 export interface Article {
   id: string;
@@ -44,6 +47,12 @@ export async function loadKB(): Promise<KBData> {
  * Simple keyword-based search through KB articles with product filtering
  */
 export async function searchKB(query: string, maxResults = 10): Promise<Article[]> {
+  if (USE_VECTOR) {
+    console.log('🔍 Using vector search (Supabase)');
+    return await vectorSearch(query, maxResults);
+  }
+
+  console.log('🔍 Using keyword search');
   const kb = await loadKB();
   const queryLower = query.toLowerCase();
   

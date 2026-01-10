@@ -38,7 +38,7 @@ export function Header({ onClearChat, hasMessages }: HeaderProps) {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Moraware</span>
               </div>
-              <h1 className="text-lg font-semibold leading-tight">CounterGo AI Assistant</h1>
+              <h1 className="text-lg font-semibold leading-tight">Moraware AI Assistant</h1>
               <p className="text-xs text-muted-foreground/70 hidden sm:block">
                 Powered by Moraware AI • Supports CounterGo, Systemize & Inventory
               </p>
