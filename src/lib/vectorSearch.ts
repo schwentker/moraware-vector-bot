@@ -38,9 +38,13 @@ export async function vectorSearch(query: string, maxResults = 10): Promise<Arti
 
   console.log(`🎯 Vector search${productFilter ? ` for ${productFilter}` : ''}`);
 
-  // 3. Search by cosine similarity
+  // 3. Convert array to PostgreSQL vector string format
+  // Supabase-js doesn't properly convert JS arrays to PG vectors, so we do it manually
+  const vectorString = `[${queryEmbedding.join(',')}]`;
+
+  // 4. Search by cosine similarity
   const { data, error } = await supabase.rpc('search_articles', {
-    query_embedding: queryEmbedding,
+    query_embedding: vectorString,  // Send as PostgreSQL vector string
     match_threshold: 0.1,  // Very low threshold to cast a wide net (10% similarity)
     match_count: Math.max(maxResults, 15),  // Get at least 15 results for better ranking
     product_filter: productFilter
