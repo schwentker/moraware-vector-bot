@@ -6,7 +6,7 @@ npm run build
 
 # 2. Define the path to your Hugo static folder
 # ADJUST THIS PATH to point to your local sandboxlabsai repo folder
-HUGO_STATIC_PATH="../sandboxlabsai/static/countergo-chat"
+HUGO_STATIC_PATH="/Users/schwentker/dev/sblai/sandboxlabsai/static/moraware-vector"
 
 # 3. Clean and Copy
 echo "🚚 Syncing files to Hugo..."
