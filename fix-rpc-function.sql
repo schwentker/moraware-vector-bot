@@ -1,6 +1,10 @@
 -- FIXED RPC Function with Explicit TEXT to VECTOR Casting
 -- This fixes the PostgREST type conversion issue
 
+-- STEP 1: Drop old function to avoid overloading issues
+DROP FUNCTION IF EXISTS search_articles(vector, float, int, text);
+
+-- STEP 2: Create new function that accepts TEXT
 CREATE OR REPLACE FUNCTION search_articles(
   query_embedding TEXT,  -- Changed from vector(384) to TEXT
   match_threshold FLOAT DEFAULT 0.5,
