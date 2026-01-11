@@ -29,6 +29,16 @@ export async function vectorSearch(query: string, maxResults = 10): Promise<Arti
   // 1. Generate embedding client-side
   const queryEmbedding = await generateEmbedding(query);
 
+  // 🔍 DEBUG: Log embedding details
+  console.log('🔍 Embedding Debug Info:');
+  console.log(`  - Length: ${queryEmbedding.length} (should be 384)`);
+  console.log(`  - First 5 values: [${queryEmbedding.slice(0, 5).join(', ')}]`);
+  console.log(`  - Value range: [${Math.min(...queryEmbedding).toFixed(4)}, ${Math.max(...queryEmbedding).toFixed(4)}]`);
+
+  // Calculate vector magnitude to verify normalization
+  const magnitude = Math.sqrt(queryEmbedding.reduce((sum, val) => sum + val * val, 0));
+  console.log(`  - Magnitude: ${magnitude.toFixed(6)} (should be ~1.0 if normalized)`);
+
   // 2. Detect product filter
   const queryLower = query.toLowerCase();
   let productFilter = null;
@@ -57,7 +67,15 @@ export async function vectorSearch(query: string, maxResults = 10): Promise<Arti
 
   console.log(`📚 Found ${data.length} vector matches`);
 
-  // 4. Convert to Article format (matches kbSearch.ts interface)
+  // 🔍 DEBUG: Log top results with similarity scores
+  if (data.length > 0) {
+    console.log('📊 Top 3 results:');
+    data.slice(0, 3).forEach((result: any, i: number) => {
+      console.log(`  ${i + 1}. "${result.title}" (similarity: ${result.similarity?.toFixed(4) || 'N/A'})`);
+    });
+  }
+
+  // 5. Convert to Article format (matches kbSearch.ts interface)
   return data.map(article => ({
     id: article.id,
     title: article.title,
