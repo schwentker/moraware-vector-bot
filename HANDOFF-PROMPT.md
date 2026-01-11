@@ -5,7 +5,7 @@
 I need help debugging a vector search issue in a Supabase/PostgreSQL database. The vector search works perfectly in SQL but fails when called from JavaScript client.
 
 ## Quick Facts
-- **Repository:** https://github.com/schwentker/countergo-helper-chat
+- **Repository:** https://github.com/schwentker/moraware-vector-bot
 - **Full handoff doc:** See `AI-HANDOFF.md` in repo root
 - **Supabase URL:** https://cdfnowhfprbwjcqrpekd.supabase.co
 - **Anon Key:** `sb_publishable_8tknVOhKWJ-jp1s3v1S-1A_iuuVni0m`

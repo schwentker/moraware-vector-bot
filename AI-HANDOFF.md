@@ -12,7 +12,7 @@ Vector search in Supabase is NOT working correctly. Despite multiple fixes, sema
 ## System Details
 
 ### GitHub Repositories
-1. **Frontend/Bot Code:** https://github.com/schwentker/countergo-helper-chat
+1. **Frontend/Bot Code:** https://github.com/schwentker/moraware-vector-bot
    - Branch: `main`
    - Local path: `/Users/schwentker/dev/countergo-worker/moraware-vector-bot`
    - Key file: `src/lib/vectorSearch.ts`
